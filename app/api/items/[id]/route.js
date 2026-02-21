@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getClient, ensureSchema } from "../../../../lib/db";
 import { getCurrentUser } from "../../../../lib/auth";
 
-export async function PUT(request, { params }) {
+export async function PUT(request, ctx) {
   try {
     await ensureSchema();
     const user = await getCurrentUser();
@@ -10,7 +10,11 @@ export async function PUT(request, { params }) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const id = Number(params.id);
+    const { id: idParam } = await ctx.params;
+    const id = Number(idParam);
+    if (!Number.isInteger(id) || Number.isNaN(id)) {
+      return NextResponse.json({ error: "Invalid id" }, { status: 400 });
+    }
     const { title, description } = await request.json();
     if (!title) {
       return NextResponse.json(
@@ -41,7 +45,7 @@ export async function PUT(request, { params }) {
   }
 }
 
-export async function DELETE(_request, { params }) {
+export async function DELETE(_request, ctx) {
   try {
     await ensureSchema();
     const user = await getCurrentUser();
@@ -49,7 +53,11 @@ export async function DELETE(_request, { params }) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const id = Number(params.id);
+    const { id: idParam } = await ctx.params;
+    const id = Number(idParam);
+    if (!Number.isInteger(id) || Number.isNaN(id)) {
+      return NextResponse.json({ error: "Invalid id" }, { status: 400 });
+    }
     const sql = getClient();
 
     const result = await sql`
